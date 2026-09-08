@@ -41,10 +41,12 @@ jobs:
           fi
           echo "clean_server=$CLEAN_SERVER" >> $GITHUB_OUTPUT
 
-          # Determine target remote directory
+          # Test FTP authentication and determine target remote directory
           SERVER_DIR="public_html/"
           LISTING=$(curl --connect-timeout 8 --max-time 12 -s "ftp://$CLEAN_SERVER/" --user "$FTP_USER:$FTP_PASS" 2>/dev/null || true)
-          if echo "$LISTING" | grep -q "index.php"; then
+          if [ -z "$LISTING" ]; then
+            echo "::error title=FTP 530 Login Failed::FTP server rejected credentials. In cPanel, if you created a separate FTP account, the username must include the domain (e.g. 'deploy@prisha-enterprises.in'). Please check FTP_USERNAME and FTP_PASSWORD in GitHub Secrets: https://github.com/Anmolwadh/prishaprod/settings/secrets/actions"
+          elif echo "$LISTING" | grep -q "index.php"; then
             echo "Target directory: ./ (website root detected)"
             SERVER_DIR="./"
           else
