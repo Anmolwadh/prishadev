@@ -19,21 +19,47 @@ jobs:
       - name: Verify FTP Credentials
         id: check_ftp
         env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          RAW_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
           FTP_PASS: ${{ secrets.FTP_PASSWORD }}
         run: |
-          if [ -z "$FTP_SERVER" ] || [ -z "$FTP_PASS" ]; then
+          if [ -z "$RAW_SERVER" ] || [ -z "$FTP_PASS" ]; then
             echo "::error title=Missing FTP Credentials::Cannot deploy to live server. Please add FTP_SERVER, FTP_USERNAME, and FTP_PASSWORD to GitHub Secrets (https://github.com/Anmolwadh/prishaprod/settings/secrets/actions)."
             exit 1
           fi
 
+          # Strip protocol scheme (ftp://, https://, etc.), trailing slashes, port, and whitespace
+          CLEAN_SERVER=$(echo "$RAW_SERVER" | sed -e 's~^[a-zA-Z0-9]*://~~' -e 's~/.*~~' -e 's~:.*~~' | tr -d '[:space:]')
+          if [ -z "$CLEAN_SERVER" ]; then
+            CLEAN_SERVER="188.241.62.2"
+          fi
+
+          # Verify DNS resolution; fallback to known Hostomy IP if hostname cannot be resolved
+          if ! getent ahostsv4 "$CLEAN_SERVER" > /dev/null 2>&1 && ! getent hosts "$CLEAN_SERVER" > /dev/null 2>&1; then
+            echo "::warning title=DNS Lookup Fallback::Server '$CLEAN_SERVER' could not be resolved. Falling back to live IP 188.241.62.2."
+            CLEAN_SERVER="188.241.62.2"
+          fi
+          echo "clean_server=$CLEAN_SERVER" >> $GITHUB_OUTPUT
+
+          # Determine target remote directory
+          SERVER_DIR="public_html/"
+          LISTING=$(curl --connect-timeout 8 --max-time 12 -s "ftp://$CLEAN_SERVER/" --user "$FTP_USER:$FTP_PASS" 2>/dev/null || true)
+          if echo "$LISTING" | grep -q "index.php"; then
+            echo "Target directory: ./ (website root detected)"
+            SERVER_DIR="./"
+          else
+            echo "Target directory: public_html/"
+          fi
+          echo "server_dir=$SERVER_DIR" >> $GITHUB_OUTPUT
+
       - name: Sync Files to Live Server via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          server: ${{ steps.check_ftp.outputs.clean_server }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: public_html/
+          server-dir: ${{ steps.check_ftp.outputs.server_dir || 'public_html/' }}
+          security: loose
           exclude: |
             **/.git*
             **/.git*/**
