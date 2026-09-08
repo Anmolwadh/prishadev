@@ -44,3 +44,23 @@ body.admin-body { background: var(--admin-bg); font-family: "Manrope", sans-seri
   .admin-sidebar.show { transform: translateX(0); }
   .admin-content { margin-left: 0; }
 }
+
+.password-toggle-btn {
+  border-color: #dee2e6;
+  color: #64748b;
+  background-color: #fff;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+}
+.password-toggle-btn:hover,
+.password-toggle-btn:focus {
+  color: var(--admin-accent, #2e7d32);
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: none;
+}
+

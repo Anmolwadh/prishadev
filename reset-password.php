@@ -76,13 +76,23 @@ include __DIR__ . '/includes/header.php';
           </div>
 
           <div class="mb-3">
-            <label class="form-label">New Password</label>
-            <input type="password" name="password" class="form-control" required minlength="6" autofocus placeholder="At least 6 characters">
+            <label class="form-label" for="resetPassword">New Password</label>
+            <div class="input-group">
+              <input type="password" name="password" id="resetPassword" class="form-control" required minlength="6" autofocus placeholder="At least 6 characters" autocomplete="new-password">
+              <button class="btn btn-outline-secondary password-toggle-btn" type="button" data-toggle-password aria-label="Show password" tabindex="-1">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Confirm New Password</label>
-            <input type="password" name="confirm_password" class="form-control" required minlength="6" placeholder="Repeat your new password">
+            <label class="form-label" for="resetConfirm">Confirm New Password</label>
+            <div class="input-group">
+              <input type="password" name="confirm_password" id="resetConfirm" class="form-control" required minlength="6" placeholder="Repeat your new password" autocomplete="new-password">
+              <button class="btn btn-outline-secondary password-toggle-btn" type="button" data-toggle-password aria-label="Show password" tabindex="-1">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
           </div>
 
           <button class="btn btn-pe w-100" type="submit">Update Password</button>

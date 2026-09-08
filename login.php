@@ -44,11 +44,16 @@ include __DIR__ . '/includes/header.php';
           <input type="email" name="email" class="form-control" required value="<?= e($_POST['email'] ?? '') ?>">
         </div>
         <div class="mb-3">
-          <div class="d-flex justify-content-between align-items-center">
-            <label class="form-label mb-0">Password</label>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label mb-0" for="loginPassword">Password</label>
             <a href="<?= e(url('forgot-password.php')) ?>" class="small text-decoration-none text-success">Forgot Password?</a>
           </div>
-          <input type="password" name="password" class="form-control mt-1" required>
+          <div class="input-group">
+            <input type="password" name="password" id="loginPassword" class="form-control" required autocomplete="current-password">
+            <button class="btn btn-outline-secondary password-toggle-btn" type="button" data-toggle-password aria-label="Show password" tabindex="-1">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
         </div>
         <button class="btn btn-pe w-100" type="submit">Login</button>
       </form>

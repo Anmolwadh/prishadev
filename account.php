@@ -69,7 +69,15 @@ include __DIR__ . '/includes/header.php';
             <div class="col-md-6"><label class="form-label">Name</label><input name="name" class="form-control" required value="<?= e($customer['name'] ?? '') ?>"></div>
             <div class="col-md-6"><label class="form-label">Email</label><input class="form-control" value="<?= e($customer['email'] ?? '') ?>" disabled></div>
             <div class="col-md-6"><label class="form-label">Phone</label><input name="phone" class="form-control" required value="<?= e($customer['phone'] ?? '') ?>"></div>
-            <div class="col-md-6"><label class="form-label">New Password (optional)</label><input type="password" name="password" class="form-control"></div>
+            <div class="col-md-6">
+              <label class="form-label" for="accountPassword">New Password (optional)</label>
+              <div class="input-group">
+                <input type="password" name="password" id="accountPassword" class="form-control" autocomplete="new-password">
+                <button class="btn btn-outline-secondary password-toggle-btn" type="button" data-toggle-password aria-label="Show password" tabindex="-1">
+                  <i class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+            </div>
             <div class="col-12"><label class="form-label">Address</label><textarea name="address" class="form-control" rows="2"><?= e($customer['address'] ?? '') ?></textarea></div>
             <div class="col-md-4"><label class="form-label">City</label><input name="city" class="form-control" value="<?= e($customer['city'] ?? '') ?>"></div>
             <div class="col-md-4"><label class="form-label">State</label><input name="state" class="form-control" value="<?= e($customer['state'] ?? '') ?>"></div>

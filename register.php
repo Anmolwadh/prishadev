@@ -52,8 +52,24 @@ include __DIR__ . '/includes/header.php';
         <div class="mb-3"><label class="form-label">Full Name</label><input type="text" name="name" class="form-control" required value="<?= e($_POST['name'] ?? '') ?>"></div>
         <div class="mb-3"><label class="form-label">Email</label><input type="email" name="email" class="form-control" required value="<?= e($_POST['email'] ?? '') ?>"></div>
         <div class="mb-3"><label class="form-label">Mobile</label><input type="text" name="phone" class="form-control" required maxlength="10" value="<?= e($_POST['phone'] ?? '') ?>"></div>
-        <div class="mb-3"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
-        <div class="mb-3"><label class="form-label">Confirm Password</label><input type="password" name="confirm_password" class="form-control" required></div>
+        <div class="mb-3">
+          <label class="form-label" for="regPassword">Password</label>
+          <div class="input-group">
+            <input type="password" name="password" id="regPassword" class="form-control" required autocomplete="new-password">
+            <button class="btn btn-outline-secondary password-toggle-btn" type="button" data-toggle-password aria-label="Show password" tabindex="-1">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="regConfirm">Confirm Password</label>
+          <div class="input-group">
+            <input type="password" name="confirm_password" id="regConfirm" class="form-control" required autocomplete="new-password">
+            <button class="btn btn-outline-secondary password-toggle-btn" type="button" data-toggle-password aria-label="Show password" tabindex="-1">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
         <button class="btn btn-pe w-100" type="submit">Register</button>
       </form>
       <p class="mt-3 mb-0 text-center">Already have an account? <a href="<?= e(url('login.php')) ?>">Login</a></p>

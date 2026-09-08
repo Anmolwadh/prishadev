@@ -52,8 +52,13 @@ include __DIR__ . '/includes/header.php';
       </div>
     <?php endforeach; ?>
     <div class="col-md-6">
-      <label class="form-label">Change Admin Password (optional)</label>
-      <input type="password" name="admin_password" class="form-control" placeholder="Leave blank to keep current">
+      <label class="form-label" for="adminSettingsPassword">Change Admin Password (optional)</label>
+      <div class="input-group">
+        <input type="password" name="admin_password" id="adminSettingsPassword" class="form-control" placeholder="Leave blank to keep current" autocomplete="new-password">
+        <button class="btn btn-outline-secondary password-toggle-btn" type="button" data-toggle-password aria-label="Show password" tabindex="-1">
+          <i class="fa-regular fa-eye"></i>
+        </button>
+      </div>
     </div>
     <div class="col-12"><button class="btn btn-success" type="submit">Save Settings</button></div>
   </form>

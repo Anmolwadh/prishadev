@@ -29,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Login | Prisha Enterprises</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
   <link href="<?= e(asset('css/admin.css')) ?>" rel="stylesheet">
 </head>
 <body class="admin-body d-flex align-items-center" style="min-height:100vh">
@@ -39,18 +40,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <?php if ($error): ?><div class="alert alert-danger"><?= e($error) ?></div><?php endif; ?>
       <form method="post">
         <?= csrf_field() ?>
-        <div class="mb-3"><label class="form-label">Username</label><input name="username" class="form-control" required autofocus></div>
+        <div class="mb-3"><label class="form-label">Username</label><input name="username" class="form-control" required autofocus autocomplete="username"></div>
         <div class="mb-3">
-          <div class="d-flex justify-content-between align-items-center">
-            <label class="form-label mb-0">Password</label>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label mb-0" for="adminPassword">Password</label>
             <a href="<?= e(url('forgot-password.php?type=admin')) ?>" class="small text-decoration-none text-success">Forgot Password?</a>
           </div>
-          <input type="password" name="password" class="form-control mt-1" required>
+          <div class="input-group">
+            <input type="password" name="password" id="adminPassword" class="form-control" required autocomplete="current-password">
+            <button class="btn btn-outline-secondary password-toggle-btn" type="button" data-toggle-password aria-label="Show password" tabindex="-1">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
         </div>
         <button class="btn btn-success w-100" type="submit">Login</button>
       </form>
       <p class="small text-muted mt-3 mb-0">Default: <code>admin</code> / <code>password</code></p>
     </div>
   </div>
+<script>
+document.addEventListener('click', function (e) {
+  const toggleBtn = e.target.closest('[data-toggle-password]');
+  if (!toggleBtn) return;
+  e.preventDefault();
+  const group = toggleBtn.closest('.input-group') || toggleBtn.parentElement;
+  const input = group ? group.querySelector('input') : null;
+  if (!input) return;
+  const isPassword = input.type === 'password';
+  input.type = isPassword ? 'text' : 'password';
+  const icon = toggleBtn.querySelector('i');
+  if (icon) {
+    if (isPassword) {
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
+      toggleBtn.setAttribute('aria-label', 'Hide password');
+    } else {
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
+      toggleBtn.setAttribute('aria-label', 'Show password');
+    }
+  }
+});
+</script>
 </body>
 </html>

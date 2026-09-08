@@ -353,3 +353,23 @@ a:hover { color: var(--pe-green-800); }
   .section-pad { padding: 2.5rem 0; }
   .clients-section .clients-row { grid-template-columns: 1fr; }
 }
+
+.password-toggle-btn {
+  border-color: #dee2e6;
+  color: #64748b;
+  background-color: #fff;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+}
+.password-toggle-btn:hover,
+.password-toggle-btn:focus {
+  color: var(--pe-primary, #15803d);
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: none;
+}
+
