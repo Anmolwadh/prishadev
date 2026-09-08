@@ -46,6 +46,19 @@ function url(string $path = ''): string
     return BASE_URL . '/' . ltrim($path, '/');
 }
 
+function absolute_url(string $path = ''): string
+{
+    $cleanPath = url($path);
+    if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== '') {
+        $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443)
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+        $scheme = $isHttps ? 'https' : 'http';
+        return $scheme . '://' . $_SERVER['HTTP_HOST'] . $cleanPath;
+    }
+    return 'https://prisha-enterprises.in' . $cleanPath;
+}
+
 function asset(string $path): string
 {
     return url('assets/' . ltrim($path, '/'));
@@ -482,3 +495,26 @@ function active_nav(string $page): string
 {
     return current_page() === $page ? 'active' : '';
 }
+
+function send_email(string $to, string $subject, string $htmlBody, ?string $altBody = null): bool
+{
+    $businessName = get_setting('business_name', SITE_NAME) ?? SITE_NAME;
+    $fromEmail = get_setting('email', 'info@prishaenterprises.com') ?: 'info@prishaenterprises.com';
+
+    $headers = [];
+    $headers[] = 'MIME-Version: 1.0';
+    $headers[] = 'Content-Type: text/html; charset=UTF-8';
+    $headers[] = 'From: ' . sprintf('=?UTF-8?B?%s?= <%s>', base64_encode($businessName), $fromEmail);
+    $headers[] = 'Reply-To: ' . $fromEmail;
+    $headers[] = 'X-Mailer: PHP/' . phpversion();
+
+    $headerStr = implode("\r\n", $headers);
+    $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+
+    $sent = @mail($to, $encodedSubject, $htmlBody, $headerStr);
+    if (!$sent) {
+        error_log(sprintf('[Email] Failed to send email to %s with subject: %s', $to, $subject));
+    }
+    return $sent;
+}
+

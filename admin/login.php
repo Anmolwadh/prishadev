@@ -40,7 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <form method="post">
         <?= csrf_field() ?>
         <div class="mb-3"><label class="form-label">Username</label><input name="username" class="form-control" required autofocus></div>
-        <div class="mb-3"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <label class="form-label mb-0">Password</label>
+            <a href="<?= e(url('forgot-password.php?type=admin')) ?>" class="small text-decoration-none text-success">Forgot Password?</a>
+          </div>
+          <input type="password" name="password" class="form-control mt-1" required>
+        </div>
         <button class="btn btn-success w-100" type="submit">Login</button>
       </form>
       <p class="small text-muted mt-3 mb-0">Default: <code>admin</code> / <code>password</code></p>

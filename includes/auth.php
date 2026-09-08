@@ -92,3 +92,108 @@ function logout_admin(): void
 {
     unset($_SESSION['admin_id'], $_SESSION['admin_name']);
 }
+
+function ensure_password_resets_table(PDO $pdo): void
+{
+    static $ensured = false;
+    if ($ensured) {
+        return;
+    }
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS password_resets (
+          id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+          email VARCHAR(100) NOT NULL,
+          token_hash VARCHAR(64) NOT NULL,
+          user_type ENUM('customer', 'admin') NOT NULL DEFAULT 'customer',
+          expires_at DATETIME NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          KEY idx_pwd_resets_token (token_hash),
+          KEY idx_pwd_resets_email (email)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
+    $ensured = true;
+}
+
+function create_password_reset_token(string $email, string $userType = 'customer'): ?string
+{
+    $email = trim($email);
+    if (!validate_email($email)) {
+        return null;
+    }
+
+    $pdo = getDB();
+    ensure_password_resets_table($pdo);
+    if ($userType === 'admin') {
+        $stmt = $pdo->prepare("SELECT id FROM admins WHERE email = ? AND status = 'Active' LIMIT 1");
+    } else {
+        $userType = 'customer';
+        $stmt = $pdo->prepare('SELECT id FROM customers WHERE email = ? LIMIT 1');
+    }
+    $stmt->execute([$email]);
+    if (!$stmt->fetch()) {
+        return null;
+    }
+
+    $rawToken = bin2hex(random_bytes(32));
+    $tokenHash = hash('sha256', $rawToken);
+    $expiresAt = date('Y-m-d H:i:s', time() + 3600); // 1 hour
+
+    // Clean up previous tokens for this email and type
+    $del = $pdo->prepare('DELETE FROM password_resets WHERE email = ? AND user_type = ?');
+    $del->execute([$email, $userType]);
+
+    // Insert new token
+    $ins = $pdo->prepare('INSERT INTO password_resets (email, token_hash, user_type, expires_at) VALUES (?, ?, ?, ?)');
+    $ins->execute([$email, $tokenHash, $userType, $expiresAt]);
+
+    return $rawToken;
+}
+
+function verify_password_reset_token(string $email, string $token, string $userType = 'customer'): bool
+{
+    $email = trim($email);
+    $token = trim($token);
+    if ($email === '' || $token === '') {
+        return false;
+    }
+
+    $userType = ($userType === 'admin') ? 'admin' : 'customer';
+    $tokenHash = hash('sha256', $token);
+
+    $pdo = getDB();
+    ensure_password_resets_table($pdo);
+    $stmt = $pdo->prepare(
+        'SELECT id FROM password_resets WHERE email = ? AND token_hash = ? AND user_type = ? AND expires_at > NOW() LIMIT 1'
+    );
+    $stmt->execute([$email, $tokenHash, $userType]);
+    return (bool)$stmt->fetch();
+}
+
+function reset_user_password(string $email, string $token, string $newPassword, string $userType = 'customer'): bool
+{
+    if (strlen($newPassword) < 6) {
+        return false;
+    }
+
+    $userType = ($userType === 'admin') ? 'admin' : 'customer';
+    if (!verify_password_reset_token($email, $token, $userType)) {
+        return false;
+    }
+
+    $pdo = getDB();
+    $hash = password_hash($newPassword, PASSWORD_DEFAULT);
+
+    if ($userType === 'admin') {
+        $update = $pdo->prepare("UPDATE admins SET password = ? WHERE email = ? AND status = 'Active'");
+    } else {
+        $update = $pdo->prepare('UPDATE customers SET password = ? WHERE email = ?');
+    }
+    $update->execute([$hash, $email]);
+
+    // Remove token after successful reset
+    $del = $pdo->prepare('DELETE FROM password_resets WHERE email = ? AND user_type = ?');
+    $del->execute([$email, $userType]);
+
+    return true;
+}
+

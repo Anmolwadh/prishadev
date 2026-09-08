@@ -45,6 +45,7 @@ function getDB(): PDO
         $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         ensure_clients_schema($pdo);
         ensure_product_gst_schema($pdo);
+        ensure_password_resets_schema($pdo);
     } catch (PDOException $e) {
         error_log('Database connection failed: ' . $e->getMessage());
         http_response_code(500);
@@ -93,3 +94,20 @@ function ensure_product_gst_schema(PDO $pdo): void
         $pdo->exec('ALTER TABLE orders ADD COLUMN tax DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER shipping');
     }
 }
+
+function ensure_password_resets_schema(PDO $pdo): void
+{
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS password_resets (
+          id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+          email VARCHAR(100) NOT NULL,
+          token_hash VARCHAR(64) NOT NULL,
+          user_type ENUM('customer', 'admin') NOT NULL DEFAULT 'customer',
+          expires_at DATETIME NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          KEY idx_pwd_resets_token (token_hash),
+          KEY idx_pwd_resets_email (email)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
+}
+
