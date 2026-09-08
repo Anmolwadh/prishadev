@@ -55,7 +55,7 @@ include __DIR__ . '/includes/header.php';
       <label class="form-label" for="adminSettingsPassword">Change Admin Password (optional)</label>
       <div class="input-group">
         <input type="password" name="admin_password" id="adminSettingsPassword" class="form-control" placeholder="Leave blank to keep current" autocomplete="new-password">
-        <button class="btn btn-outline-secondary password-toggle-btn" type="button" onclick="togglePasswordVisibility(this)" data-toggle-password aria-label="Show password" tabindex="-1">
+        <button class="btn btn-outline-secondary password-toggle-btn" type="button" onclick="togglePasswordVisibility(this, event)" data-toggle-password aria-label="Show password" tabindex="-1">
           <i class="fa-regular fa-eye"></i>
         </button>
       </div>

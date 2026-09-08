@@ -32,28 +32,35 @@ $businessPhone = get_setting('phone', '+918054798966');
   <link href="<?= e(asset('css/style.css')) ?>" rel="stylesheet">
   <script>
     window.PE = { baseUrl: <?= json_encode(BASE_URL) ?>, csrf: <?= json_encode(csrf_token()) ?> };
-    function togglePasswordVisibility(btn) {
+    function togglePasswordVisibility(btn, event) {
+      if (event) {
+        if (typeof event.preventDefault === 'function') event.preventDefault();
+        if (typeof event.stopPropagation === 'function') event.stopPropagation();
+      }
       if (!btn) return;
       var group = btn.closest('.input-group') || btn.parentElement;
       if (!group) return;
       var input = group.querySelector('input');
       if (!input) return;
+
       var isPass = input.type === 'password';
-      input.type = isPass ? 'text' : 'password';
+      var nextType = isPass ? 'text' : 'password';
+      input.type = nextType;
+      input.setAttribute('type', nextType);
+
       var icon = btn.querySelector('i');
       if (icon) {
         if (isPass) {
-          icon.classList.remove('fa-eye');
-          icon.classList.add('fa-eye-slash');
+          icon.className = 'fa-regular fa-eye-slash';
           btn.setAttribute('aria-label', 'Hide password');
         } else {
-          icon.classList.remove('fa-eye-slash');
-          icon.classList.add('fa-eye');
+          icon.className = 'fa-regular fa-eye';
           btn.setAttribute('aria-label', 'Show password');
         }
       }
-      input.focus();
+      try { input.focus(); } catch (err) {}
     }
+    window.togglePasswordVisibility = togglePasswordVisibility;
   </script>
 </head>
 <body class="<?= e($bodyClass) ?>">

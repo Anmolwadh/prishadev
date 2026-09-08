@@ -79,7 +79,7 @@ include __DIR__ . '/includes/header.php';
             <label class="form-label" for="resetPassword">New Password</label>
             <div class="input-group">
               <input type="password" name="password" id="resetPassword" class="form-control" required minlength="6" autofocus placeholder="At least 6 characters" autocomplete="new-password">
-              <button class="btn btn-outline-secondary password-toggle-btn" type="button" onclick="togglePasswordVisibility(this)" data-toggle-password aria-label="Show password" tabindex="-1">
+              <button class="btn btn-outline-secondary password-toggle-btn" type="button" onclick="togglePasswordVisibility(this, event)" data-toggle-password aria-label="Show password" tabindex="-1">
                 <i class="fa-regular fa-eye"></i>
               </button>
             </div>
@@ -89,7 +89,7 @@ include __DIR__ . '/includes/header.php';
             <label class="form-label" for="resetConfirm">Confirm New Password</label>
             <div class="input-group">
               <input type="password" name="confirm_password" id="resetConfirm" class="form-control" required minlength="6" placeholder="Repeat your new password" autocomplete="new-password">
-              <button class="btn btn-outline-secondary password-toggle-btn" type="button" onclick="togglePasswordVisibility(this)" data-toggle-password aria-label="Show password" tabindex="-1">
+              <button class="btn btn-outline-secondary password-toggle-btn" type="button" onclick="togglePasswordVisibility(this, event)" data-toggle-password aria-label="Show password" tabindex="-1">
                 <i class="fa-regular fa-eye"></i>
               </button>
             </div>

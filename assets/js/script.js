@@ -121,29 +121,13 @@
     const toggleBtn = e.target.closest('[data-toggle-password]');
     if (toggleBtn) {
       e.preventDefault();
-      const targetSelector = toggleBtn.getAttribute('data-toggle-password');
-      let input = targetSelector ? document.querySelector(targetSelector) : null;
-      if (!input) {
-        const group = toggleBtn.closest('.input-group') || toggleBtn.parentElement;
-        input = group ? group.querySelector('input') : null;
+      if (toggleBtn.hasAttribute('onclick')) {
+        return;
       }
-      if (!input) return;
-
-      const isPassword = input.type === 'password';
-      input.type = isPassword ? 'text' : 'password';
-
-      const icon = toggleBtn.querySelector('i');
-      if (icon) {
-        if (isPassword) {
-          icon.classList.remove('fa-eye');
-          icon.classList.add('fa-eye-slash');
-          toggleBtn.setAttribute('aria-label', 'Hide password');
-        } else {
-          icon.classList.remove('fa-eye-slash');
-          icon.classList.add('fa-eye');
-          toggleBtn.setAttribute('aria-label', 'Show password');
-        }
+      if (typeof window.togglePasswordVisibility === 'function') {
+        window.togglePasswordVisibility(toggleBtn, e);
       }
+      return;
     }
   });
 
