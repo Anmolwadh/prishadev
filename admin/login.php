@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </div>
           <div class="input-group">
             <input type="password" name="password" id="adminPassword" class="form-control" required autocomplete="current-password">
-            <button class="btn btn-outline-secondary password-toggle-btn" type="button" data-toggle-password aria-label="Show password" tabindex="-1">
+            <button class="btn btn-outline-secondary password-toggle-btn" type="button" onclick="togglePasswordVisibility(this)" data-toggle-password aria-label="Show password" tabindex="-1">
               <i class="fa-regular fa-eye"></i>
             </button>
           </div>
@@ -59,26 +59,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
 <script>
-document.addEventListener('click', function (e) {
-  const toggleBtn = e.target.closest('[data-toggle-password]');
-  if (!toggleBtn) return;
-  e.preventDefault();
-  const group = toggleBtn.closest('.input-group') || toggleBtn.parentElement;
-  const input = group ? group.querySelector('input') : null;
+function togglePasswordVisibility(btn) {
+  if (!btn) return;
+  var group = btn.closest('.input-group') || btn.parentElement;
+  if (!group) return;
+  var input = group.querySelector('input');
   if (!input) return;
-  const isPassword = input.type === 'password';
-  input.type = isPassword ? 'text' : 'password';
-  const icon = toggleBtn.querySelector('i');
+  var isPass = input.type === 'password';
+  input.type = isPass ? 'text' : 'password';
+  var icon = btn.querySelector('i');
   if (icon) {
-    if (isPassword) {
+    if (isPass) {
       icon.classList.remove('fa-eye');
       icon.classList.add('fa-eye-slash');
-      toggleBtn.setAttribute('aria-label', 'Hide password');
+      btn.setAttribute('aria-label', 'Hide password');
     } else {
       icon.classList.remove('fa-eye-slash');
       icon.classList.add('fa-eye');
-      toggleBtn.setAttribute('aria-label', 'Show password');
+      btn.setAttribute('aria-label', 'Show password');
     }
+  }
+  input.focus();
+}
+
+document.addEventListener('click', function (e) {
+  var toggleBtn = e.target.closest('[data-toggle-password]');
+  if (toggleBtn && !toggleBtn.getAttribute('onclick')) {
+    e.preventDefault();
+    togglePasswordVisibility(toggleBtn);
   }
 });
 </script>

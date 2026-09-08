@@ -50,7 +50,7 @@ include __DIR__ . '/includes/header.php';
           </div>
           <div class="input-group">
             <input type="password" name="password" id="loginPassword" class="form-control" required autocomplete="current-password">
-            <button class="btn btn-outline-secondary password-toggle-btn" type="button" data-toggle-password aria-label="Show password" tabindex="-1">
+            <button class="btn btn-outline-secondary password-toggle-btn" type="button" onclick="togglePasswordVisibility(this)" data-toggle-password aria-label="Show password" tabindex="-1">
               <i class="fa-regular fa-eye"></i>
             </button>
           </div>

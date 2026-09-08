@@ -63,4 +63,8 @@ body.admin-body { background: var(--admin-bg); font-family: "Manrope", sans-seri
   border-color: #cbd5e1;
   box-shadow: none;
 }
+.password-toggle-btn i {
+  pointer-events: none;
+}
+
 

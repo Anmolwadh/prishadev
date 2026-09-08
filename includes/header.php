@@ -30,7 +30,31 @@ $businessPhone = get_setting('phone', '+918054798966');
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
   <link href="<?= e(asset('css/style.css')) ?>" rel="stylesheet">
-  <script>window.PE = { baseUrl: <?= json_encode(BASE_URL) ?>, csrf: <?= json_encode(csrf_token()) ?> };</script>
+  <script>
+    window.PE = { baseUrl: <?= json_encode(BASE_URL) ?>, csrf: <?= json_encode(csrf_token()) ?> };
+    function togglePasswordVisibility(btn) {
+      if (!btn) return;
+      var group = btn.closest('.input-group') || btn.parentElement;
+      if (!group) return;
+      var input = group.querySelector('input');
+      if (!input) return;
+      var isPass = input.type === 'password';
+      input.type = isPass ? 'text' : 'password';
+      var icon = btn.querySelector('i');
+      if (icon) {
+        if (isPass) {
+          icon.classList.remove('fa-eye');
+          icon.classList.add('fa-eye-slash');
+          btn.setAttribute('aria-label', 'Hide password');
+        } else {
+          icon.classList.remove('fa-eye-slash');
+          icon.classList.add('fa-eye');
+          btn.setAttribute('aria-label', 'Show password');
+        }
+      }
+      input.focus();
+    }
+  </script>
 </head>
 <body class="<?= e($bodyClass) ?>">
 <header class="site-header sticky-top">

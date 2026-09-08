@@ -61,7 +61,10 @@ function absolute_url(string $path = ''): string
 
 function asset(string $path): string
 {
-    return url('assets/' . ltrim($path, '/'));
+    $cleanPath = ltrim($path, '/');
+    $fullPath = BASE_PATH . '/assets/' . $cleanPath;
+    $v = file_exists($fullPath) ? (string)filemtime($fullPath) : '1.2';
+    return url('assets/' . $cleanPath) . '?v=' . $v;
 }
 
 function csrf_token(): string

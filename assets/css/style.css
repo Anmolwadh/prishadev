@@ -372,4 +372,8 @@ a:hover { color: var(--pe-green-800); }
   border-color: #cbd5e1;
   box-shadow: none;
 }
+.password-toggle-btn i {
+  pointer-events: none;
+}
+
 
