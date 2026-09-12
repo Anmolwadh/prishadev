@@ -46,6 +46,7 @@ function getDB(): PDO
         ensure_clients_schema($pdo);
         ensure_product_gst_schema($pdo);
         ensure_password_resets_schema($pdo);
+        ensure_order_type_schema($pdo);
     } catch (PDOException $e) {
         error_log('Database connection failed: ' . $e->getMessage());
         http_response_code(500);
@@ -109,5 +110,19 @@ function ensure_password_resets_schema(PDO $pdo): void
           KEY idx_pwd_resets_email (email)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
+}
+
+function ensure_order_type_schema(PDO $pdo): void
+{
+    static $ensured = false;
+    if ($ensured) {
+        return;
+    }
+    $hasCol = $pdo->query("SHOW COLUMNS FROM orders LIKE 'order_type'")->fetch();
+    if (!$hasCol) {
+        $pdo->exec("ALTER TABLE orders ADD COLUMN order_type ENUM('online', 'manual') NOT NULL DEFAULT 'online' AFTER order_number");
+        $pdo->exec("UPDATE orders SET order_type = 'manual' WHERE notes LIKE '%Manual%' OR payment_method IN ('Cash', 'Cheque')");
+    }
+    $ensured = true;
 }
 

@@ -55,11 +55,18 @@ include __DIR__ . '/includes/header.php';
   </div>
   <div class="table-responsive">
     <table class="table align-middle">
-      <thead><tr><th>Order</th><th>Customer</th><th>Phone</th><th>Total</th><th>Status</th><th>Date</th><th></th></tr></thead>
+      <thead><tr><th>Order</th><th>Type</th><th>Customer</th><th>Phone</th><th>Total</th><th>Status</th><th>Date</th><th></th></tr></thead>
       <tbody>
         <?php foreach ($recent as $o): ?>
           <tr>
             <td><?= e($o['order_number']) ?></td>
+            <td>
+              <?php if (($o['order_type'] ?? 'online') === 'manual'): ?>
+                <span class="badge bg-warning text-dark"><i class="fa-solid fa-store me-1"></i>Manual</span>
+              <?php else: ?>
+                <span class="badge bg-info text-dark"><i class="fa-solid fa-globe me-1"></i>Online</span>
+              <?php endif; ?>
+            </td>
             <td><?= e($o['customer_name']) ?></td>
             <td><?= e($o['phone']) ?></td>
             <td><?= e(format_money((float)$o['total'])) ?></td>
@@ -68,7 +75,7 @@ include __DIR__ . '/includes/header.php';
             <td><a class="btn btn-sm btn-outline-success" href="<?= e(url('admin/order-details.php?id=' . (int)$o['id'])) ?>">View</a></td>
           </tr>
         <?php endforeach; ?>
-        <?php if (!$recent): ?><tr><td colspan="7" class="text-center text-muted">No orders yet.</td></tr><?php endif; ?>
+        <?php if (!$recent): ?><tr><td colspan="8" class="text-center text-muted">No orders yet.</td></tr><?php endif; ?>
       </tbody>
     </table>
   </div>

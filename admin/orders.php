@@ -6,6 +6,7 @@ require_admin();
 $pdo = getDB();
 $q = trim((string)($_GET['q'] ?? ''));
 $status = trim((string)($_GET['status'] ?? ''));
+$type = trim((string)($_GET['type'] ?? ''));
 $page = max(1, (int)($_GET['page'] ?? 1));
 
 $where = ['1=1'];
@@ -18,6 +19,10 @@ if ($q !== '') {
 if ($status !== '') {
     $where[] = 'order_status = ?';
     $params[] = $status;
+}
+if ($type !== '' && in_array($type, ['online', 'manual'], true)) {
+    $where[] = 'order_type = ?';
+    $params[] = $type;
 }
 $sqlWhere = implode(' AND ', $where);
 $count = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE $sqlWhere");
@@ -41,8 +46,15 @@ include __DIR__ . '/includes/header.php';
 </div>
 <div class="admin-card mb-3">
   <form class="row g-2" method="get">
-    <div class="col-md-5"><input class="form-control" name="q" value="<?= e($q) ?>" placeholder="Search order, customer, phone"></div>
-    <div class="col-md-4">
+    <div class="col-md-4"><input class="form-control" name="q" value="<?= e($q) ?>" placeholder="Search order, customer, phone"></div>
+    <div class="col-md-3">
+      <select name="type" class="form-select">
+        <option value="">All Types (Online &amp; Manual)</option>
+        <option value="online" <?= $type === 'online' ? 'selected' : '' ?>>Online Orders</option>
+        <option value="manual" <?= $type === 'manual' ? 'selected' : '' ?>>Manual / Offline Orders</option>
+      </select>
+    </div>
+    <div class="col-md-3">
       <select name="status" class="form-select">
         <option value="">All Statuses</option>
         <?php foreach (['Pending','Confirmed','Processing','Shipped','Out for Delivery','Delivered','Cancelled'] as $st): ?>
@@ -50,17 +62,26 @@ include __DIR__ . '/includes/header.php';
         <?php endforeach; ?>
       </select>
     </div>
-    <div class="col-md-3"><button class="btn btn-success w-100">Filter</button></div>
+    <div class="col-md-2"><button class="btn btn-success w-100">Filter</button></div>
   </form>
 </div>
 <div class="admin-card">
   <div class="table-responsive">
     <table class="table align-middle">
-      <thead><tr><th>Order Number</th><th>Customer</th><th>Phone</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+      <thead><tr><th>Order Number</th><th>Type</th><th>Customer</th><th>Phone</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
       <tbody>
         <?php foreach ($orders as $o): ?>
           <tr>
-            <td><?= e($o['order_number']) ?></td>
+            <td>
+              <span class="fw-bold"><?= e($o['order_number']) ?></span>
+            </td>
+            <td>
+              <?php if (($o['order_type'] ?? 'online') === 'manual'): ?>
+                <span class="badge bg-warning text-dark"><i class="fa-solid fa-store me-1"></i>Manual</span>
+              <?php else: ?>
+                <span class="badge bg-info text-dark"><i class="fa-solid fa-globe me-1"></i>Online</span>
+              <?php endif; ?>
+            </td>
             <td><?= e($o['customer_name']) ?></td>
             <td><?= e($o['phone']) ?></td>
             <td><?= e(format_money((float)$o['total'])) ?></td>
@@ -77,7 +98,7 @@ include __DIR__ . '/includes/header.php';
             </td>
           </tr>
         <?php endforeach; ?>
-        <?php if (!$orders): ?><tr><td colspan="8" class="text-center text-muted">No orders found.</td></tr><?php endif; ?>
+        <?php if (!$orders): ?><tr><td colspan="9" class="text-center text-muted">No orders found.</td></tr><?php endif; ?>
       </tbody>
     </table>
   </div>

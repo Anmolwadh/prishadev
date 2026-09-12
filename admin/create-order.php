@@ -113,12 +113,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $orderNumber = generate_order_number($pdo);
 
             $stmtOrder = $pdo->prepare(
-                'INSERT INTO orders (order_number, customer_id, customer_name, email, phone, address, city, state, pincode, landmark,
+                'INSERT INTO orders (order_number, order_type, customer_id, customer_name, email, phone, address, city, state, pincode, landmark,
                  subtotal, shipping, tax, discount, total, payment_method, payment_status, order_status, notes)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             );
             $stmtOrder->execute([
                 $orderNumber,
+                'manual',
                 $customerId,
                 $customerName,
                 $email !== '' ? $email : null,

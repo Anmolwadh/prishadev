@@ -46,6 +46,23 @@ $orderItems = $items->fetchAll();
 $pageTitle = 'Order ' . $order['order_number'];
 include __DIR__ . '/includes/header.php';
 ?>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+    <a href="<?= e(url('admin/orders.php')) ?>" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-arrow-left me-1"></i>Back to Orders</a>
+    <h1 class="h4 mb-0">Order <?= e($order['order_number']) ?></h1>
+    <?php if (($order['order_type'] ?? 'online') === 'manual'): ?>
+      <span class="badge bg-warning text-dark"><i class="fa-solid fa-store me-1"></i>Manual Order (Offline)</span>
+    <?php else: ?>
+      <span class="badge bg-info text-dark"><i class="fa-solid fa-globe me-1"></i>Online Order</span>
+    <?php endif; ?>
+    <span class="badge bg-secondary"><?= e($order['order_status']) ?></span>
+    <span class="badge <?= $order['payment_status'] === 'Paid' ? 'bg-success' : 'bg-warning text-dark' ?>"><?= e($order['payment_status']) ?></span>
+  </div>
+  <div class="text-muted small">
+    <i class="fa-regular fa-calendar-days me-1"></i>Placed: <?= e(date('d M Y, h:i A', strtotime($order['created_at']))) ?>
+  </div>
+</div>
+
 <div class="row g-3">
   <div class="col-lg-8">
     <div class="admin-card mb-3">
@@ -73,9 +90,48 @@ include __DIR__ . '/includes/header.php';
         <div>Discount: <?= e(format_money((float)$order['discount'])) ?></div>
         <div class="fw-bold fs-5">Total: <?= e(format_money((float)$order['total'])) ?></div>
       </div>
+      <?php if (!empty($order['notes'])): ?>
+        <div class="mt-3 pt-3 border-top">
+          <h6 class="text-muted small text-uppercase mb-1"><i class="fa-regular fa-note-sticky me-1"></i>Order Notes</h6>
+          <div class="p-2 bg-light rounded small"><?= nl2br(e($order['notes'])) ?></div>
+        </div>
+      <?php endif; ?>
     </div>
   </div>
   <div class="col-lg-4">
+    <div class="admin-card mb-3">
+      <h2 class="h5">Order Overview</h2>
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <span class="text-muted">Order Type:</span>
+        <span>
+          <?php if (($order['order_type'] ?? 'online') === 'manual'): ?>
+            <span class="badge bg-warning text-dark"><i class="fa-solid fa-store me-1"></i>Manual (Offline)</span>
+          <?php else: ?>
+            <span class="badge bg-info text-dark"><i class="fa-solid fa-globe me-1"></i>Online</span>
+          <?php endif; ?>
+        </span>
+      </div>
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <span class="text-muted">Payment Method:</span>
+        <span class="fw-semibold"><?= e(strtoupper($order['payment_method'] ?? 'COD')) ?></span>
+      </div>
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <span class="text-muted">Order Status:</span>
+        <span class="badge bg-secondary"><?= e($order['order_status']) ?></span>
+      </div>
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <span class="text-muted">Payment Status:</span>
+        <span class="badge <?= $order['payment_status'] === 'Paid' ? 'bg-success' : 'bg-warning text-dark' ?>"><?= e($order['payment_status']) ?></span>
+      </div>
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <span class="text-muted">Order Date:</span>
+        <span class="small"><?= e(date('d M Y, h:i A', strtotime($order['created_at']))) ?></span>
+      </div>
+      <div class="d-flex justify-content-between align-items-center py-2">
+        <span class="text-muted">Last Updated:</span>
+        <span class="small"><?= e(date('d M Y, h:i A', strtotime($order['updated_at'] ?? $order['created_at']))) ?></span>
+      </div>
+    </div>
     <div class="admin-card mb-3">
       <h2 class="h5">Customer</h2>
       <p class="mb-1"><strong><?= e($order['customer_name']) ?></strong></p>
