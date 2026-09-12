@@ -30,6 +30,15 @@ $orders = $stmt->fetchAll();
 $pageTitle = 'Orders';
 include __DIR__ . '/includes/header.php';
 ?>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="h5 mb-0"><i class="fa-solid fa-bag-shopping text-success me-2"></i>Orders</h2>
+    <div class="text-muted small">Manage online and offline client orders.</div>
+  </div>
+  <a href="<?= e(url('admin/create-order.php')) ?>" class="btn btn-success">
+    <i class="fa-solid fa-plus me-1"></i>Create Manual Order
+  </a>
+</div>
 <div class="admin-card mb-3">
   <form class="row g-2" method="get">
     <div class="col-md-5"><input class="form-control" name="q" value="<?= e($q) ?>" placeholder="Search order, customer, phone"></div>
