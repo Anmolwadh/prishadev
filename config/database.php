@@ -4,9 +4,11 @@
  */
 declare(strict_types=1);
 
-// Auto-detect environment: Local (Windows / XAMPP / localhost) vs Live Server (Hostomy / Linux)
-$isLocalEnv = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1', 'localhost:8080'], true)
-    || (php_sapi_name() === 'cli' && stripos(PHP_OS, 'WIN') !== false);
+// Auto-detect environment: Local (Windows / localhost / 127.0.0.1) vs Live Server (Hostomy / Linux)
+$httpHost = (string)($_SERVER['HTTP_HOST'] ?? '');
+$isLocalEnv = stripos(PHP_OS, 'WIN') !== false
+    || str_contains($httpHost, 'localhost')
+    || str_contains($httpHost, '127.0.0.1');
 
 if ($isLocalEnv) {
     define('DB_HOST', '127.0.0.1');
