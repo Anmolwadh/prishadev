@@ -58,7 +58,14 @@ include __DIR__ . '/includes/header.php';
             <td><?= e($o['payment_status']) ?></td>
             <td><?= e($o['order_status']) ?></td>
             <td><?= e(date('d M Y', strtotime($o['created_at']))) ?></td>
-            <td><a href="<?= e(url('admin/order-details.php?id=' . (int)$o['id'])) ?>" class="btn btn-sm btn-outline-success">View</a></td>
+            <td>
+              <div class="d-flex gap-1">
+                <a href="<?= e(url('admin/order-details.php?id=' . (int)$o['id'])) ?>" class="btn btn-sm btn-outline-success" title="View Order">View</a>
+                <a href="<?= e(url('admin/delete-order.php?id=' . (int)$o['id'] . '&csrf_token=' . csrf_token())) ?>" class="btn btn-sm btn-outline-danger" title="Delete Order" onclick="return confirm('Are you sure you want to permanently delete order <?= e($o['order_number']) ?>?\nThis action cannot be undone.');">
+                  <i class="fa-solid fa-trash"></i>
+                </a>
+              </div>
+            </td>
           </tr>
         <?php endforeach; ?>
         <?php if (!$orders): ?><tr><td colspan="8" class="text-center text-muted">No orders found.</td></tr><?php endif; ?>

@@ -98,15 +98,20 @@ include __DIR__ . '/includes/header.php';
         </select>
         <button class="btn btn-success" type="submit">Update Status</button>
       </form>
-      <div class="d-flex gap-2 mt-3">
-        <a class="btn btn-outline-secondary" href="<?= e(url('admin/invoice.php?id=' . $id)) ?>" target="_blank">Print Invoice</a>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <a class="btn btn-outline-secondary" href="<?= e(url('admin/invoice.php?id=' . $id)) ?>" target="_blank"><i class="fa-solid fa-print me-1"></i>Print Invoice</a>
         <?php if ($order['order_status'] !== 'Cancelled'): ?>
           <form method="post" onsubmit="return confirm('Cancel this order?')">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="cancel">
-            <button class="btn btn-outline-danger" type="submit">Cancel Order</button>
+            <button class="btn btn-outline-warning text-dark" type="submit"><i class="fa-solid fa-ban me-1"></i>Cancel Order</button>
           </form>
         <?php endif; ?>
+        <form method="post" action="<?= e(url('admin/delete-order.php')) ?>" onsubmit="return confirm('Are you sure you want to permanently delete order <?= e($order['order_number']) ?>?\nThis action cannot be undone.');">
+          <?= csrf_field() ?>
+          <input type="hidden" name="id" value="<?= (int)$id ?>">
+          <button class="btn btn-outline-danger" type="submit"><i class="fa-solid fa-trash me-1"></i>Delete Order</button>
+        </form>
       </div>
     </div>
   </div>
