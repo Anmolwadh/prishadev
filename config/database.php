@@ -4,10 +4,21 @@
  */
 declare(strict_types=1);
 
-define('DB_HOST', '127.0.0.1');
-define('DB_NAME', 'prisha_enterprises');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+// Auto-detect environment: Local (Windows / XAMPP / localhost) vs Live Server (Hostomy / Linux)
+$isLocalEnv = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1', 'localhost:8080'], true)
+    || (php_sapi_name() === 'cli' && stripos(PHP_OS, 'WIN') !== false);
+
+if ($isLocalEnv) {
+    define('DB_HOST', '127.0.0.1');
+    define('DB_NAME', 'prisha_enterprises');
+    define('DB_USER', 'root');
+    define('DB_PASS', '');
+} else {
+    define('DB_HOST', 'localhost');
+    define('DB_NAME', 'prishaen00_shop');
+    define('DB_USER', 'prishaen00_admin');
+    define('DB_PASS', 'Anmol@777');
+}
 define('DB_CHARSET', 'utf8mb4');
 
 /**
@@ -43,20 +54,32 @@ function getDB(): PDO
 
     try {
         $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-        ensure_clients_schema($pdo);
-        ensure_product_gst_schema($pdo);
-        ensure_password_resets_schema($pdo);
-        ensure_order_type_schema($pdo);
-        ensure_expenses_schema($pdo);
     } catch (PDOException $e) {
-        error_log('Database connection failed: ' . $e->getMessage());
-        http_response_code(500);
-        if (php_sapi_name() !== 'cli') {
-            include BASE_PATH . '/includes/error-500.php';
-            exit;
+        // Fallback for Hostomy / Linux if localhost socket vs 127.0.0.1 port differs
+        if (DB_HOST === 'localhost') {
+            try {
+                $fallbackDsn = 'mysql:host=127.0.0.1;dbname=' . DB_NAME . ';charset=' . DB_CHARSET;
+                $pdo = new PDO($fallbackDsn, DB_USER, DB_PASS, $options);
+            } catch (PDOException) {
+                // Keep original exception
+            }
         }
-        throw $e;
+        if (!$pdo instanceof PDO) {
+            error_log('Database connection failed: ' . $e->getMessage());
+            http_response_code(500);
+            if (php_sapi_name() !== 'cli') {
+                include BASE_PATH . '/includes/error-500.php';
+                exit;
+            }
+            throw $e;
+        }
     }
+
+    ensure_clients_schema($pdo);
+    ensure_product_gst_schema($pdo);
+    ensure_password_resets_schema($pdo);
+    ensure_order_type_schema($pdo);
+    ensure_expenses_schema($pdo);
 
     return $pdo;
 }
