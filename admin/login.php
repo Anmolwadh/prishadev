@@ -55,7 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         <button class="btn btn-success w-100" type="submit">Login</button>
       </form>
-      <p class="small text-muted mt-3 mb-0">Default: <code>admin</code> / <code>password</code></p>
     </div>
   </div>
 <script>
