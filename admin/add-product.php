@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../includes/auth.php';
-require_admin();
+require_permission('products_manage');
 
 $pdo = getDB();
 $categories = $pdo->query("SELECT id, name FROM categories WHERE status='Active' ORDER BY name")->fetchAll();

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../includes/auth.php';
-require_admin();
+require_permission('orders_manage');
 
 $pdo = getDB();
 $q = trim((string)($_GET['q'] ?? ''));
@@ -61,9 +61,11 @@ include __DIR__ . '/includes/header.php';
             <td>
               <div class="d-flex gap-1">
                 <a href="<?= e(url('admin/order-details.php?id=' . (int)$o['id'])) ?>" class="btn btn-sm btn-outline-success" title="View Order">View</a>
-                <a href="<?= e(url('admin/delete-order.php?id=' . (int)$o['id'] . '&csrf_token=' . csrf_token())) ?>" class="btn btn-sm btn-outline-danger" title="Delete Order" onclick="return confirm('Are you sure you want to permanently delete order <?= e($o['order_number']) ?>?\nThis action cannot be undone.');">
-                  <i class="fa-solid fa-trash"></i>
-                </a>
+                <?php if (has_permission('orders_delete')): ?>
+                  <a href="<?= e(url('admin/delete-order.php?id=' . (int)$o['id'] . '&csrf_token=' . csrf_token())) ?>" class="btn btn-sm btn-outline-danger" title="Delete Order" onclick="return confirm('Are you sure you want to permanently delete order <?= e($o['order_number']) ?>?\nThis action cannot be undone.');">
+                    <i class="fa-solid fa-trash"></i>
+                  </a>
+                <?php endif; ?>
               </div>
             </td>
           </tr>
