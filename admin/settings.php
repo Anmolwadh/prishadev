@@ -22,10 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             set_setting($key, trim((string)$_POST[$key]));
         }
     }
-    if (!empty($_POST['admin_password'])) {
-        $hash = password_hash((string)$_POST['admin_password'], PASSWORD_DEFAULT);
-        $pdo->prepare('UPDATE admins SET password = ? WHERE id = ?')->execute([$hash, (int)$_SESSION['admin_id']]);
-    }
     flash('success', 'Settings saved.');
     redirect('admin/settings.php');
 }
@@ -52,13 +48,13 @@ include __DIR__ . '/includes/header.php';
       </div>
     <?php endforeach; ?>
     <div class="col-md-6">
-      <label class="form-label" for="adminSettingsPassword">Change Admin Password (optional)</label>
-      <div class="input-group">
-        <input type="password" name="admin_password" id="adminSettingsPassword" class="form-control" placeholder="Leave blank to keep current" autocomplete="new-password">
-        <button class="btn btn-outline-secondary password-toggle-btn" type="button" onclick="togglePasswordVisibility(this, event)" data-toggle-password aria-label="Show password" tabindex="-1">
-          <i class="fa-regular fa-eye"></i>
-        </button>
+      <label class="form-label">Admin Security</label>
+      <div>
+        <a href="<?= e(url('admin/change-password.php')) ?>" class="btn btn-outline-secondary">
+          <i class="fa-solid fa-key me-1"></i>Change Admin Password
+        </a>
       </div>
+      <div class="form-text">Update your login password securely by verifying your current password.</div>
     </div>
     <div class="col-12"><button class="btn btn-success" type="submit">Save Settings</button></div>
   </form>

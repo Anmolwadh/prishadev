@@ -39,6 +39,7 @@ $adminPage = $adminPage ?? '';
       'bulk-enquiries.php' => ['Bulk Enquiries', 'fa-clipboard-list'],
       'reports.php' => ['Reports', 'fa-chart-line'],
       'settings.php' => ['Settings', 'fa-gear'],
+      'change-password.php' => ['Change Password', 'fa-key'],
       'logout.php' => ['Logout', 'fa-right-from-bracket'],
     ];
     foreach ($links as $file => [$label, $icon]):
@@ -55,6 +56,11 @@ $adminPage = $adminPage ?? '';
           <strong><?= e($pageTitle ?? 'Admin') ?></strong>
           <div class="small text-muted">Logged in as <?= e($admin['name'] ?? 'Admin') ?></div>
         </div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <a href="<?= e(url('admin/change-password.php')) ?>" class="btn btn-sm btn-outline-secondary d-none d-sm-inline-flex align-items-center gap-1">
+          <i class="fa-solid fa-key"></i><span>Change Password</span>
+        </a>
       </div>
     </div>
     <?php if ($msg = get_flash('success')): ?><div class="alert alert-success"><?= e($msg) ?></div><?php endif; ?>
