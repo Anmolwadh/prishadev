@@ -38,6 +38,7 @@ $adminPage = $adminPage ?? '';
       'inventory.php' => ['Inventory', 'fa-warehouse'],
       'bulk-enquiries.php' => ['Bulk Enquiries', 'fa-clipboard-list'],
       'reports.php' => ['Reports', 'fa-chart-line'],
+      'expenses.php' => ['Expenses & Bills', 'fa-receipt'],
       'settings.php' => ['Settings', 'fa-gear'],
       'change-password.php' => ['Change Password', 'fa-key'],
       'logout.php' => ['Logout', 'fa-right-from-bracket'],

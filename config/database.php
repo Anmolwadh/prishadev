@@ -47,6 +47,7 @@ function getDB(): PDO
         ensure_product_gst_schema($pdo);
         ensure_password_resets_schema($pdo);
         ensure_order_type_schema($pdo);
+        ensure_expenses_schema($pdo);
     } catch (PDOException $e) {
         error_log('Database connection failed: ' . $e->getMessage());
         http_response_code(500);
@@ -126,3 +127,31 @@ function ensure_order_type_schema(PDO $pdo): void
     $ensured = true;
 }
 
+function ensure_expenses_schema(PDO $pdo): void
+{
+    static $ensured = false;
+    if ($ensured) {
+        return;
+    }
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS expenses (
+          id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+          bill_number VARCHAR(50) DEFAULT NULL,
+          title VARCHAR(255) NOT NULL,
+          category VARCHAR(100) NOT NULL,
+          amount DECIMAL(10,2) NOT NULL,
+          bill_date DATE NOT NULL,
+          payment_method VARCHAR(50) NOT NULL DEFAULT 'Cash',
+          payment_status ENUM('Paid', 'Pending') NOT NULL DEFAULT 'Paid',
+          vendor_name VARCHAR(150) DEFAULT NULL,
+          receipt_file VARCHAR(255) DEFAULT NULL,
+          notes TEXT DEFAULT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          KEY idx_expenses_bill_date (bill_date),
+          KEY idx_expenses_category (category),
+          KEY idx_expenses_status (payment_status)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
+    $ensured = true;
+}

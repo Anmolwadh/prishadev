@@ -435,6 +435,50 @@ function upload_product_image(array $file): array
     return ['success' => true, 'message' => 'Uploaded.', 'filename' => $filename];
 }
 
+function upload_expense_receipt(array $file): array
+{
+    $error = (int)($file['error'] ?? UPLOAD_ERR_NO_FILE);
+    if ($error !== UPLOAD_ERR_OK) {
+        return ['success' => false, 'message' => upload_error_message($error), 'filename' => null];
+    }
+    if (($file['size'] ?? 0) > UPLOAD_MAX_SIZE) {
+        return ['success' => false, 'message' => 'Receipt file must be under 5MB.', 'filename' => null];
+    }
+    if (empty($file['tmp_name']) || !is_file($file['tmp_name'])) {
+        return ['success' => false, 'message' => 'Invalid upload. Please try again.', 'filename' => null];
+    }
+
+    $allowedExt = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
+    $ext = strtolower((string)pathinfo((string)($file['name'] ?? ''), PATHINFO_EXTENSION));
+    if (!in_array($ext, $allowedExt, true)) {
+        return ['success' => false, 'message' => 'Only JPG, PNG, WEBP, or PDF files are allowed.', 'filename' => null];
+    }
+
+    $safeExt = $ext === 'jpeg' ? 'jpg' : $ext;
+    $filename = 'receipt_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $safeExt;
+    $receiptDir = BASE_PATH . '/uploads/receipts/';
+    $destFile = $receiptDir . $filename;
+    $tmp = (string)$file['tmp_name'];
+
+    if (!is_dir($receiptDir) && !@mkdir($receiptDir, 0755, true) && !is_dir($receiptDir)) {
+        return ['success' => false, 'message' => 'Could not create uploads/receipts folder.', 'filename' => null];
+    }
+    if (!is_writable($receiptDir)) {
+        return ['success' => false, 'message' => 'Receipt folder is not writable.', 'filename' => null];
+    }
+
+    $saved = @copy($tmp, $destFile);
+    if (!$saved && is_uploaded_file($tmp)) {
+        $saved = @move_uploaded_file($tmp, $destFile);
+    }
+    if (!$saved) {
+        return ['success' => false, 'message' => 'Could not save receipt file.', 'filename' => null];
+    }
+    @chmod($destFile, 0644);
+
+    return ['success' => true, 'message' => 'Uploaded successfully.', 'filename' => $filename];
+}
+
 function paginate(int $total, int $page, int $perPage = 12): array
 {
     $pages = max(1, (int)ceil($total / $perPage));
