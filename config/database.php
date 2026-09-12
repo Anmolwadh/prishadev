@@ -80,6 +80,7 @@ function getDB(): PDO
     ensure_password_resets_schema($pdo);
     ensure_order_type_schema($pdo);
     ensure_expenses_schema($pdo);
+    ensure_razorpay_schema($pdo);
 
     return $pdo;
 }
@@ -176,5 +177,42 @@ function ensure_expenses_schema(PDO $pdo): void
           KEY idx_expenses_status (payment_status)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
+    $ensured = true;
+}
+
+function ensure_razorpay_schema(PDO $pdo): void
+{
+    static $ensured = false;
+    if ($ensured) {
+        return;
+    }
+
+    $cols = $pdo->query("SHOW COLUMNS FROM orders LIKE 'razorpay_order_id'")->fetch();
+    if (!$cols) {
+        $pdo->exec("ALTER TABLE orders
+            ADD COLUMN razorpay_order_id VARCHAR(100) NULL AFTER payment_method,
+            ADD COLUMN razorpay_payment_id VARCHAR(100) NULL AFTER razorpay_order_id,
+            ADD COLUMN razorpay_signature VARCHAR(255) NULL AFTER razorpay_payment_id,
+            ADD KEY idx_orders_rzp_payment (razorpay_payment_id)");
+    }
+
+    // Seed default settings if missing
+    $seedSettings = [
+        'razorpay_enabled' => '1',
+        'razorpay_key_id' => 'rzp_test_TbDuFqvITs1a92',
+        'razorpay_key_secret' => 'Q5g6n8xT05olD7kAM2GNEUEA',
+        'razorpay_mode' => 'test',
+    ];
+
+    $check = $pdo->prepare("SELECT setting_value FROM settings WHERE setting_key = ?");
+    $insert = $pdo->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?)");
+
+    foreach ($seedSettings as $k => $v) {
+        $check->execute([$k]);
+        if (!$check->fetch()) {
+            $insert->execute([$k, $v]);
+        }
+    }
+
     $ensured = true;
 }

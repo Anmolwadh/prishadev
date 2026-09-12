@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/razorpay.php';
 
 if (!cart()) {
     flash('error', 'Your cart is empty.');
@@ -8,6 +9,7 @@ if (!cart()) {
 }
 
 $customer = current_customer();
+$razorpayEnabled = razorpay_is_enabled();
 $preCity = trim((string)($_POST['city'] ?? ($customer['city'] ?? '')));
 $preAddress = trim((string)($_POST['address'] ?? ($customer['address'] ?? '')));
 $prePincode = trim((string)($_POST['pincode'] ?? ($customer['pincode'] ?? '')));
@@ -85,9 +87,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $orderNumber = generate_order_number($pdo);
 
             $ins = $pdo->prepare(
-                "INSERT INTO orders (order_number, customer_id, customer_name, email, phone, address, city, state, pincode, landmark,
+                "INSERT INTO orders (order_number, order_type, customer_id, customer_name, email, phone, address, city, state, pincode, landmark,
                  subtotal, shipping, tax, discount, total, payment_method, payment_status, order_status)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'COD', 'Pending', 'Pending')"
+                 VALUES (?, 'online', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'COD', 'Pending', 'Pending')"
             );
             $ins->execute([
                 $orderNumber,
@@ -186,8 +188,32 @@ include __DIR__ . '/includes/header.php';
               <input type="text" name="landmark" class="form-control" value="<?= e($_POST['landmark'] ?? '') ?>">
             </div>
           </div>
-          <div class="mt-4 p-3 rounded-3 bg-light">
-            <strong>Payment Method:</strong> Cash on Delivery (COD)
+          <div class="mt-4">
+            <label class="form-label fw-bold d-block mb-2">Select Payment Method *</label>
+            <div class="vstack gap-2" id="paymentOptionsGroup">
+              <?php if ($razorpayEnabled): ?>
+                <label class="p-3 rounded-3 border d-flex align-items-center justify-content-between payment-card" style="cursor: pointer; background: #f8fafc;" id="labelRazorpay">
+                  <div class="d-flex align-items-center gap-3">
+                    <input type="radio" name="payment_method" value="Razorpay" checked class="form-check-input mt-0" id="payRazorpay">
+                    <div>
+                      <div class="fw-bold text-dark"><i class="fa-solid fa-credit-card text-primary me-2"></i>Pay Online (Razorpay)</div>
+                      <div class="small text-muted">UPI (Google Pay, PhonePe, Paytm), Debit/Credit Cards, Net Banking, Wallets</div>
+                    </div>
+                  </div>
+                  <span class="badge bg-primary text-white">Instant &amp; Secure</span>
+                </label>
+              <?php endif; ?>
+
+              <label class="p-3 rounded-3 border d-flex align-items-center justify-content-between payment-card" style="cursor: pointer; background: #f8fafc;" id="labelCOD">
+                <div class="d-flex align-items-center gap-3">
+                  <input type="radio" name="payment_method" value="COD" <?= !$razorpayEnabled ? 'checked' : '' ?> class="form-check-input mt-0" id="payCOD">
+                  <div>
+                    <div class="fw-bold text-dark"><i class="fa-solid fa-hand-holding-dollar text-success me-2"></i>Cash on Delivery (COD)</div>
+                    <div class="small text-muted">Pay in cash upon receiving your order at your doorstep</div>
+                  </div>
+                </div>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -201,12 +227,19 @@ include __DIR__ . '/includes/header.php';
           <?php endforeach; ?>
           <hr>
           <div class="d-flex justify-content-between mb-3"><span>Total Amount</span><strong class="fs-5 text-success" id="coTotal"><?= e(format_money($totals['total'])) ?></strong></div>
-          <button type="submit" class="btn btn-pe w-100">Place Order</button>
+          <div id="checkoutAlertBox" class="alert alert-danger d-none mb-3 py-2 small"></div>
+          <button type="submit" id="btnPlaceOrder" class="btn btn-pe w-100 py-2 fs-6">
+            <span id="btnText"><?= $razorpayEnabled ? 'Pay Online' : 'Place Order' ?></span>
+            <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+          </button>
         </div>
       </div>
     </form>
   </div>
 </section>
+<?php if ($razorpayEnabled): ?>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<?php endif; ?>
 <script>
 (function () {
   const charge = <?= json_encode($shippingCharge) ?>;
@@ -216,6 +249,12 @@ include __DIR__ . '/includes/header.php';
   const addressEl = document.getElementById('checkoutAddress');
   const pinEl = document.getElementById('checkoutPincode');
   const totalEl = document.getElementById('coTotal');
+  const form = document.querySelector('form.row.g-4');
+  const btnPlaceOrder = document.getElementById('btnPlaceOrder');
+  const btnText = document.getElementById('btnText');
+  const btnSpinner = document.getElementById('btnSpinner');
+  const alertBox = document.getElementById('checkoutAlertBox');
+  const rzpRadios = document.querySelectorAll('input[name="payment_method"]');
 
   function isRajpura() {
     const text = ((cityEl?.value || '') + ' ' + (addressEl?.value || '') + ' ' + (pinEl?.value || '')).toLowerCase();
@@ -228,8 +267,52 @@ include __DIR__ . '/includes/header.php';
 
   function refreshTotal() {
     const shipping = isRajpura() ? 0 : (subtotal > 0 ? charge : 0);
-    if (totalEl) totalEl.textContent = formatMoney(Math.round(subtotal + tax + shipping));
+    const finalAmount = Math.round(subtotal + tax + shipping);
+    if (totalEl) totalEl.textContent = formatMoney(finalAmount);
+    updateButtonText(finalAmount);
   }
+
+  function updateButtonText(finalAmount) {
+    const selected = document.querySelector('input[name="payment_method"]:checked')?.value || 'COD';
+    if (btnText) {
+      if (selected === 'Razorpay') {
+        btnText.textContent = 'Pay Now ' + (finalAmount ? formatMoney(finalAmount) : '');
+      } else {
+        btnText.textContent = 'Place Order (COD)';
+      }
+    }
+  }
+
+  function showAlert(msg) {
+    if (alertBox) {
+      alertBox.textContent = msg;
+      alertBox.classList.remove('d-none');
+      alertBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      alert(msg);
+    }
+  }
+
+  function hideAlert() {
+    if (alertBox) {
+      alertBox.classList.add('d-none');
+      alertBox.textContent = '';
+    }
+  }
+
+  function setLoading(loading) {
+    if (btnPlaceOrder) btnPlaceOrder.disabled = loading;
+    if (btnSpinner) {
+      if (loading) btnSpinner.classList.remove('d-none');
+      else btnSpinner.classList.add('d-none');
+    }
+  }
+
+  rzpRadios.forEach(function (r) {
+    r.addEventListener('change', function () {
+      refreshTotal();
+    });
+  });
 
   ['input', 'change', 'blur'].forEach(function (evt) {
     cityEl?.addEventListener(evt, refreshTotal);
@@ -237,6 +320,116 @@ include __DIR__ . '/includes/header.php';
     pinEl?.addEventListener(evt, refreshTotal);
   });
   refreshTotal();
+
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      const selected = document.querySelector('input[name="payment_method"]:checked')?.value || 'COD';
+      if (selected !== 'Razorpay') {
+        // Standard COD submit proceeds naturally
+        setLoading(true);
+        return;
+      }
+
+      // Online payment with Razorpay
+      e.preventDefault();
+      hideAlert();
+
+      if (!form.reportValidity()) {
+        return;
+      }
+
+      if (typeof Razorpay === 'undefined') {
+        showAlert('Razorpay checkout library failed to load. Please check your internet connection and try again.');
+        return;
+      }
+
+      setLoading(true);
+      const formData = new FormData(form);
+
+      fetch('<?= e(url('ajax/razorpay-init.php')) ?>', {
+        method: 'POST',
+        body: formData
+      })
+      .then(function (res) {
+        return res.json();
+      })
+      .then(function (data) {
+        if (!data.success) {
+          setLoading(false);
+          showAlert(data.message || 'Could not initiate payment. Please try again.');
+          return;
+        }
+
+        const options = {
+          key: data.key_id,
+          amount: data.amount,
+          currency: data.currency || 'INR',
+          name: data.business_name || 'Prisha Enterprises',
+          description: data.description || 'Order Payment',
+          image: '<?= e(asset('images/favicon.svg')) ?>',
+          order_id: data.order_id,
+          prefill: data.prefill || {},
+          theme: {
+            color: '#16a34a'
+          },
+          handler: function (response) {
+            // Payment succeeded at Razorpay -> verify cryptographic signature on server
+            if (btnText) btnText.textContent = 'Verifying Payment...';
+            fetch('<?= e(url('ajax/razorpay-verify.php')) ?>', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            })
+            .then(function (vRes) {
+              return vRes.json();
+            })
+            .then(function (vData) {
+              if (vData.success && vData.redirect_url) {
+                window.location.href = vData.redirect_url;
+              } else {
+                setLoading(false);
+                refreshTotal();
+                showAlert(vData.message || 'Payment verification failed. Please contact support.');
+              }
+            })
+            .catch(function (err) {
+              setLoading(false);
+              refreshTotal();
+              showAlert('Verification network error: ' + err.message);
+            });
+          },
+          modal: {
+            ondismiss: function () {
+              setLoading(false);
+              refreshTotal();
+              showAlert('Payment window was closed. You can retry payment or select Cash on Delivery.');
+            }
+          }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function (resp) {
+          setLoading(false);
+          refreshTotal();
+          const errDesc = resp.error?.description || 'Payment was declined by bank or cancelled.';
+          showAlert('Payment Failed: ' + errDesc);
+        });
+
+        rzp.open();
+      })
+      .catch(function (err) {
+        setLoading(false);
+        refreshTotal();
+        showAlert('Could not connect to server: ' + err.message);
+      });
+    });
+  }
 })();
 </script>
 <?php include __DIR__ . '/includes/footer.php'; ?>

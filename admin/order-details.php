@@ -113,8 +113,25 @@ include __DIR__ . '/includes/header.php';
       </div>
       <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
         <span class="text-muted">Payment Method:</span>
-        <span class="fw-semibold"><?= e(strtoupper($order['payment_method'] ?? 'COD')) ?></span>
+        <span class="fw-semibold">
+          <?= e(strtoupper($order['payment_method'] ?? 'COD')) ?>
+          <?php if (($order['payment_method'] ?? '') === 'Razorpay'): ?>
+            <span class="badge bg-primary text-white ms-1">Online</span>
+          <?php endif; ?>
+        </span>
       </div>
+      <?php if (!empty($order['razorpay_payment_id'])): ?>
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+          <span class="text-muted">Razorpay Payment ID:</span>
+          <code><?= e($order['razorpay_payment_id']) ?></code>
+        </div>
+      <?php endif; ?>
+      <?php if (!empty($order['razorpay_order_id'])): ?>
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+          <span class="text-muted">Razorpay Order ID:</span>
+          <code class="small"><?= e($order['razorpay_order_id']) ?></code>
+        </div>
+      <?php endif; ?>
       <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
         <span class="text-muted">Order Status:</span>
         <span class="badge bg-secondary"><?= e($order['order_status']) ?></span>
