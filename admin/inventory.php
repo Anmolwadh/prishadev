@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../includes/auth.php';
-require_permission('inventory_manage');
+require_admin();
 
 $pdo = getDB();
 $threshold = (int)(get_setting('low_stock_threshold', '10') ?? 10);

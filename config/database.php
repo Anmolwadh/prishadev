@@ -46,7 +46,6 @@ function getDB(): PDO
         ensure_clients_schema($pdo);
         ensure_product_gst_schema($pdo);
         ensure_password_resets_schema($pdo);
-        ensure_admin_permissions_schema($pdo);
     } catch (PDOException $e) {
         error_log('Database connection failed: ' . $e->getMessage());
         http_response_code(500);
@@ -110,26 +109,5 @@ function ensure_password_resets_schema(PDO $pdo): void
           KEY idx_pwd_resets_email (email)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
-}
-
-function ensure_admin_permissions_schema(PDO $pdo): void
-{
-    static $ensured = false;
-    if ($ensured) {
-        return;
-    }
-
-    $hasRole = $pdo->query("SHOW COLUMNS FROM admins LIKE 'role'")->fetch();
-    if (!$hasRole) {
-        $pdo->exec("ALTER TABLE admins ADD COLUMN role ENUM('super_admin', 'admin') NOT NULL DEFAULT 'admin' AFTER name");
-    }
-
-    $hasPermissions = $pdo->query("SHOW COLUMNS FROM admins LIKE 'permissions'")->fetch();
-    if (!$hasPermissions) {
-        $pdo->exec("ALTER TABLE admins ADD COLUMN permissions TEXT NULL AFTER role");
-    }
-
-    $pdo->exec("UPDATE admins SET role = 'super_admin' WHERE id = 1 OR username = 'admin'");
-    $ensured = true;
 }
 

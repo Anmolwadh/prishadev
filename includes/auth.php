@@ -43,101 +43,13 @@ function current_admin(): ?array
     if ($admin !== null) {
         return $admin;
     }
-    $stmt = getDB()->prepare('SELECT id, username, name, email, role, permissions FROM admins WHERE id = ? AND status = ? LIMIT 1');
+    $stmt = getDB()->prepare('SELECT id, username, name, email FROM admins WHERE id = ? AND status = ? LIMIT 1');
     $stmt->execute([(int)$_SESSION['admin_id'], 'Active']);
     $admin = $stmt->fetch() ?: null;
     if (!$admin) {
         unset($_SESSION['admin_id'], $_SESSION['admin_name']);
     }
     return $admin;
-}
-
-function is_super_admin(?array $admin = null): bool
-{
-    $admin = $admin ?? current_admin();
-    if (!$admin) {
-        return false;
-    }
-    return ($admin['role'] ?? '') === 'super_admin';
-}
-
-function has_permission(string $permission, ?array $admin = null): bool
-{
-    $admin = $admin ?? current_admin();
-    if (!$admin) {
-        return false;
-    }
-    if (is_super_admin($admin)) {
-        return true;
-    }
-    $raw = $admin['permissions'] ?? '';
-    if (empty($raw)) {
-        return false;
-    }
-    $perms = is_array($raw) ? $raw : json_decode((string)$raw, true);
-    if (!is_array($perms)) {
-        return false;
-    }
-    return in_array($permission, $perms, true);
-}
-
-function require_permission(string $permission): void
-{
-    require_admin();
-    if (!has_permission($permission)) {
-        flash('error', 'Access denied. You do not have permission to access this page.');
-        redirect('admin/dashboard.php');
-    }
-}
-
-function require_super_admin(): void
-{
-    require_admin();
-    if (!is_super_admin()) {
-        flash('error', 'Access denied. Only Super Administrators can access this page.');
-        redirect('admin/dashboard.php');
-    }
-}
-
-function get_available_permissions(): array
-{
-    return [
-        'orders_manage' => [
-            'label' => 'Manage Orders',
-            'desc' => 'View, process, and update order statuses',
-            'group' => 'Orders'
-        ],
-        'orders_delete' => [
-            'label' => 'Delete Orders',
-            'desc' => 'Permanently delete orders and ordered item records',
-            'group' => 'Orders'
-        ],
-        'products_manage' => [
-            'label' => 'Manage Products & Categories',
-            'desc' => 'Add, edit, and delete products, pricing, images, and categories',
-            'group' => 'Catalog'
-        ],
-        'inventory_manage' => [
-            'label' => 'Manage Inventory',
-            'desc' => 'View stock alerts and adjust product stock quantities',
-            'group' => 'Catalog'
-        ],
-        'customers_manage' => [
-            'label' => 'Customers, Clients & Enquiries',
-            'desc' => 'View customer accounts, manage partner clients, and bulk enquiries',
-            'group' => 'Users'
-        ],
-        'reports_view' => [
-            'label' => 'View Financial & Sales Reports',
-            'desc' => 'Access revenue analytics, sales reports, and business metrics',
-            'group' => 'Administration'
-        ],
-        'settings_manage' => [
-            'label' => 'Manage Store Settings',
-            'desc' => 'Update business contact, shipping charges, and store preferences',
-            'group' => 'Administration'
-        ],
-    ];
 }
 
 function require_customer(): void

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../includes/auth.php';
-require_permission('orders_delete');
+require_admin();
 
 $id = (int)($_POST['id'] ?? $_GET['id'] ?? 0);
 $pdo = getDB();

@@ -28,28 +28,21 @@ $adminPage = $adminPage ?? '';
       <div class="small opacity-75">Disposable Ecommerce</div>
     </div>
     <?php
-    $rawLinks = [
-      'dashboard.php' => ['Dashboard', 'fa-gauge', null],
-      'orders.php' => ['Orders', 'fa-bag-shopping', 'orders_manage'],
-      'products.php' => ['Products', 'fa-box', 'products_manage'],
-      'categories.php' => ['Categories', 'fa-tags', 'products_manage'],
-      'customers.php' => ['Customers', 'fa-users', 'customers_manage'],
-      'clients.php' => ['Clients', 'fa-handshake', 'customers_manage'],
-      'inventory.php' => ['Inventory', 'fa-warehouse', 'inventory_manage'],
-      'bulk-enquiries.php' => ['Bulk Enquiries', 'fa-clipboard-list', 'customers_manage'],
-      'reports.php' => ['Reports', 'fa-chart-line', 'reports_view'],
-      'settings.php' => ['Settings', 'fa-gear', 'settings_manage'],
-      'admins.php' => ['Admins & Roles', 'fa-user-shield', 'super_admin_only'],
-      'change-password.php' => ['Change Password', 'fa-key', null],
-      'logout.php' => ['Logout', 'fa-right-from-bracket', null],
+    $links = [
+      'dashboard.php' => ['Dashboard', 'fa-gauge'],
+      'orders.php' => ['Orders', 'fa-bag-shopping'],
+      'products.php' => ['Products', 'fa-box'],
+      'categories.php' => ['Categories', 'fa-tags'],
+      'customers.php' => ['Customers', 'fa-users'],
+      'clients.php' => ['Clients', 'fa-handshake'],
+      'inventory.php' => ['Inventory', 'fa-warehouse'],
+      'bulk-enquiries.php' => ['Bulk Enquiries', 'fa-clipboard-list'],
+      'reports.php' => ['Reports', 'fa-chart-line'],
+      'settings.php' => ['Settings', 'fa-gear'],
+      'change-password.php' => ['Change Password', 'fa-key'],
+      'logout.php' => ['Logout', 'fa-right-from-bracket'],
     ];
-    foreach ($rawLinks as $file => [$label, $icon, $requiredPerm]):
-      if ($requiredPerm === 'super_admin_only' && !is_super_admin($admin)) {
-        continue;
-      }
-      if ($requiredPerm !== null && $requiredPerm !== 'super_admin_only' && !has_permission($requiredPerm, $admin)) {
-        continue;
-      }
+    foreach ($links as $file => [$label, $icon]):
       $active = ($adminPage === $file || basename($_SERVER['PHP_SELF']) === $file) ? 'active' : '';
     ?>
       <a class="<?= $active ?>" href="<?= e(url('admin/' . $file)) ?>"><i class="fa-solid <?= e($icon) ?>"></i><?= e($label) ?></a>
@@ -61,22 +54,10 @@ $adminPage = $adminPage ?? '';
         <button class="btn btn-outline-success d-lg-none" type="button" onclick="document.getElementById('adminSidebar').classList.toggle('show')"><i class="fa-solid fa-bars"></i></button>
         <div>
           <strong><?= e($pageTitle ?? 'Admin') ?></strong>
-          <div class="small text-muted">
-            Logged in as <?= e($admin['name'] ?? 'Admin') ?>
-            <?php if (is_super_admin($admin)): ?>
-              <span class="badge bg-primary ms-1" style="font-size: 0.72rem;"><i class="fa-solid fa-crown me-1"></i>Super Admin</span>
-            <?php else: ?>
-              <span class="badge bg-secondary ms-1" style="font-size: 0.72rem;">Admin</span>
-            <?php endif; ?>
-          </div>
+          <div class="small text-muted">Logged in as <?= e($admin['name'] ?? 'Admin') ?></div>
         </div>
       </div>
       <div class="d-flex align-items-center gap-2">
-        <?php if (is_super_admin($admin)): ?>
-          <a href="<?= e(url('admin/admins.php')) ?>" class="btn btn-sm btn-outline-primary d-none d-md-inline-flex align-items-center gap-1">
-            <i class="fa-solid fa-user-shield"></i><span>Admins & Roles</span>
-          </a>
-        <?php endif; ?>
         <a href="<?= e(url('admin/change-password.php')) ?>" class="btn btn-sm btn-outline-secondary d-none d-sm-inline-flex align-items-center gap-1">
           <i class="fa-solid fa-key"></i><span>Change Password</span>
         </a>

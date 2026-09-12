@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../includes/auth.php';
-require_permission('products_manage');
+require_admin();
 
 $pdo = getDB();
 $q = trim((string)($_GET['q'] ?? ''));

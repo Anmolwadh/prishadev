@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../includes/auth.php';
-require_permission('orders_manage');
+require_admin();
 
 $pdo = getDB();
 $id = (int)($_GET['id'] ?? 0);
@@ -107,13 +107,11 @@ include __DIR__ . '/includes/header.php';
             <button class="btn btn-outline-warning text-dark" type="submit"><i class="fa-solid fa-ban me-1"></i>Cancel Order</button>
           </form>
         <?php endif; ?>
-        <?php if (has_permission('orders_delete')): ?>
-          <form method="post" action="<?= e(url('admin/delete-order.php')) ?>" onsubmit="return confirm('Are you sure you want to permanently delete order <?= e($order['order_number']) ?>?\nThis action cannot be undone.');">
-            <?= csrf_field() ?>
-            <input type="hidden" name="id" value="<?= (int)$id ?>">
-            <button class="btn btn-outline-danger" type="submit"><i class="fa-solid fa-trash me-1"></i>Delete Order</button>
-          </form>
-        <?php endif; ?>
+        <form method="post" action="<?= e(url('admin/delete-order.php')) ?>" onsubmit="return confirm('Are you sure you want to permanently delete order <?= e($order['order_number']) ?>?\nThis action cannot be undone.');">
+          <?= csrf_field() ?>
+          <input type="hidden" name="id" value="<?= (int)$id ?>">
+          <button class="btn btn-outline-danger" type="submit"><i class="fa-solid fa-trash me-1"></i>Delete Order</button>
+        </form>
       </div>
     </div>
   </div>
