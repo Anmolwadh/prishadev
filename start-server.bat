@@ -2,8 +2,11 @@
 title Prisha Enterprises - Local Server
 cd /d "%~dp0"
 
-set PHP=C:\Users\admin\AppData\Local\Programs\php\php.exe
-if not exist "%PHP%" set PHP=C:\xampp\php\php.exe
+if exist "C:\xampp\php\php.exe" (
+  set PHP=C:\xampp\php\php.exe
+) else (
+  set PHP=C:\Users\admin\AppData\Local\Programs\php\php.exe
+)
 
 set MYSQLD=C:\Program Files\MariaDB 12.3\bin\mysqld.exe
 set MYSQL=C:\Program Files\MariaDB 12.3\bin\mysql.exe

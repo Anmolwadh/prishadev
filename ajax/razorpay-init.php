@@ -159,5 +159,6 @@ try {
     ]);
 } catch (Throwable $e) {
     error_log('Razorpay Init Error: ' . $e->getMessage());
-    json_response(['success' => false, 'message' => 'An error occurred while preparing your payment. Please try again.'], 500);
+    $msg = 'An error occurred while preparing your payment: ' . $e->getMessage();
+    json_response(['success' => false, 'message' => $msg], 500);
 }
