@@ -31,6 +31,7 @@ $adminPage = $adminPage ?? '';
     $links = [
       'dashboard.php' => ['Dashboard', 'fa-gauge'],
       'orders.php' => ['Orders', 'fa-bag-shopping'],
+      'create-order.php' => ['+ Create Order', 'fa-cart-plus'],
       'products.php' => ['Products', 'fa-box'],
       'categories.php' => ['Categories', 'fa-tags'],
       'customers.php' => ['Customers', 'fa-users'],
